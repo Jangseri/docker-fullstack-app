@@ -1,0 +1,23 @@
+language: generic
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t changsr416/react-test-app -f ./frontend/Dockerfile.dev ./frontend
+
+script:
+  - docker run -e CI=true changsr416/react-test-app npm run test
+
+after_success:
+  - docker build -t changsr416/docker-frontend ./frontend
+  - docker build -t changsr416/docker-backend  ./backend
+  - docker build -t changsr416/docker-nginx    ./nginx
+
+  - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+
+  - docker push changsr416/docker-frontend
+  - docker push changsr416/docker-backend
+  - docker push changsr416/docker-nginx
